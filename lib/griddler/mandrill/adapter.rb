@@ -46,11 +46,9 @@ module Griddler
 
       def resolve_bcc(event)
         email = event[:email]
-        if !event[:to].map(&:first).include?(email) && event[:cc] && !event[:cc].map(&:first).include?(email)
-          [full_email([email, email.split("@")[0]])]
-        else
-          []
-        end
+        return [] if recipient_in_field?(event, :to) || recipient_in_field?(event, :cc)
+
+        [full_email([email, email.split('@').first])]
       end
 
       def full_email(contact_info)
@@ -81,6 +79,12 @@ module Griddler
         tempfile.write(content)
         tempfile.rewind
         tempfile
+      end
+
+      private
+
+      def recipient_in_field?(event, field)
+        event[field] && event[field].map(&:first).include?(event[:email])
       end
     end
   end
